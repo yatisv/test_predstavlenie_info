@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тест: Представление информации, языки, кодирование</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0; padding: 20px; min-height: 100vh;
+  }
+  .container {
+    max-width: 820px; margin: 0 auto; background: #fff;
+    padding: 30px 40px; border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  h1 { text-align: center; color: #4a4a8a; margin-bottom: 10px; }
+  .subtitle { text-align: center; color: #777; margin-bottom: 25px; }
+
+  .info-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #f4f6fb; padding: 12px 20px; border-radius: 10px;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .info-item { font-size: 15px; color: #4a4a8a; font-weight: 600; }
+  .timer {
+    font-family: 'Consolas', monospace;
+    font-size: 22px; color: #fff;
+    background: #28a745; padding: 6px 14px; border-radius: 8px;
+    transition: background 0.3s;
+  }
+  .timer.warning { background: #ffc107; color: #333; }
+  .timer.danger { background: #dc3545; animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .student-info {
+    background: #f4f6fb; padding: 15px 20px; border-radius: 10px;
+    margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+  }
+  .student-info label { display: block; font-weight: 600; color: #4a4a8a; margin-bottom: 5px; }
+  .student-info input {
+    width: 100%; padding: 8px 12px; border: 2px solid #d0d5e0;
+    border-radius: 6px; font-size: 15px;
+  }
+  .section-title {
+    color: #4a4a8a; border-bottom: 2px solid #667eea;
+    padding-bottom: 6px; margin-top: 30px;
+  }
+  .question {
+    margin: 18px 0; padding: 15px; background: #fafbff;
+    border-left: 4px solid #667eea; border-radius: 6px;
+  }
+  .question p { margin: 0 0 10px 0; font-weight: 600; color: #333; line-height: 1.5; }
+  .morse-code {
+    font-family: 'Consolas', monospace;
+    background: #2c2c54; color: #f0f0f0;
+    padding: 10px 14px; border-radius: 6px;
+    font-size: 18px; letter-spacing: 3px;
+    display: inline-block; margin: 8px 0;
+  }
+  .options label {
+    display: block; padding: 6px 10px; margin: 4px 0;
+    border-radius: 5px; cursor: pointer; transition: background 0.2s;
+  }
+  .options label:hover { background: #e8ecff; }
+  .options input { margin-right: 8px; }
+  .text-input {
+    width: 220px; padding: 8px 12px; border: 2px solid #d0d5e0;
+    border-radius: 6px; font-size: 15px; font-family: 'Consolas', monospace;
+  }
+  .btn {
+    display: block; width: 100%; padding: 14px; margin-top: 25px;
+    background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+    border: none; border-radius: 8px; font-size: 17px; font-weight: 600;
+    cursor: pointer; transition: transform 0.2s;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .result {
+    margin-top: 25px; padding: 20px; border-radius: 10px;
+    text-align: center; font-size: 18px; display: none;
+  }
+  .result.show { display: block; }
+  .result.correct { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+  .result.warning { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+  .q-correct { border-left-color: #28a745 !important; }
+  .q-wrong { border-left-color: #dc3545 !important; }
+  .answer-hint {
+    margin-top: 8px; font-size: 14px; color: #dc3545; font-style: italic;
+  }
+
+  .blocked {
+    text-align: center; padding: 40px 20px;
+    background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px;
+  }
+  .blocked h2 { color: #856404; margin-bottom: 15px; }
+  .blocked p { color: #555; font-size: 16px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📚 Тест: Представление информации</h1>
+  <p class="subtitle">20 вопросов • В каждом варианте ровно 4 задачи на раскодирование</p>
+
+  <div class="info-bar">
+    <div class="info-item" id="attemptsInfo">Попытка: —</div>
+    <div class="timer" id="timer">25:00</div>
+  </div>
+
+  <div id="testContent">
+    <div class="student-info">
+      <div>
+        <label>Фамилия:</label>
+        <input type="text" id="surname" placeholder="Иванов">
+      </div>
+      <div>
+        <label>Имя:</label>
+        <input type="text" id="name" placeholder="Иван">
+      </div>
+    </div>
+
+    <h2 class="section-title">Часть 1. Выбор ответа (1–10)</h2>
+    <div id="choiceBlock"></div>
+
+    <h2 class="section-title">Часть 2. Ввод ответа (11–20)</h2>
+    <p style="color:#777; font-size:14px;">Вводите ответ строчными буквами без пробелов. Для Морзе — слово слитно.</p>
+    <div id="textBlock"></div>
+
+    <button class="btn" id="submitBtn" onclick="checkTest()">✅ Завершить тест</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <div id="blockedScreen" class="blocked" style="display:none;">
+    <h2>🚫 Попытки исчерпаны</h2>
+    <p id="blockedText">Вы использовали все доступные попытки.</p>
+  </div>
+</div>
+
+<script>
+const MAX_ATTEMPTS = 3;
+const TIME_LIMIT = 25 * 60;
+const STORAGE_KEY = 'info_representation_test_v4';
+
+// ===== БАНК ВОПРОСОВ С ВЫБОРОМ =====
+const choicePool = [
+  { q: 'Какие языки относятся к естественным языкам представления информации?', opts: ['Язык математики','Русский, китайский, английский','Языки программирования','Нотная грамота'], a: 'Русский, китайский, английский' },
+  { q: 'Какие языки относятся к формальным языкам?', opts: ['Русский и английский','Язык математики, нотная грамота, языки программирования','Китайский и японский','Все языки мира'], a: 'Язык математики, нотная грамота, языки программирования' },
+  { q: 'Что такое кодирование?', opts: ['Процесс передачи информации','Представление информации в виде, удобном для хранения, передачи или обработки','Процесс получения информации','Уничтожение информации'], a: 'Представление информации в виде, удобном для хранения, передачи или обработки' },
+  { q: 'Какая цель кодирования связана с защитой информации?', opts: ['Быстрый способ записи','Передача по техническим каналам','Засекречивание информации','Выполнение математических вычислений'], a: 'Засекречивание информации' },
+  { q: 'Что такое шифрование?', opts: ['Способ быстрой записи','Метод засекречивания информации','Способ передачи данных','Метод сжатия информации'], a: 'Метод засекречивания информации' },
+  { q: 'Что такое стенография?', opts: ['Система счисления','Быстрый способ записи речи специальными знаками','Код Морзе','Способ шифрования'], a: 'Быстрый способ записи речи специальными знаками' },
+  { q: 'Какой код используется для передачи сообщений по телеграфу?', opts: ['Код Бодо','Код Морзе','Двоичный код','Десятичный код'], a: 'Код Морзе' },
+  { q: 'Какая система счисления используется для человека?', opts: ['Двоичная','Десятичная','Восьмеричная','Шестнадцатеричная'], a: 'Десятичная' },
+  { q: 'Какая система счисления используется для компьютера?', opts: ['Десятичная','Двоичная','Восьмеричная','Шестнадцатеричная'], a: 'Двоичная' },
+  { q: 'Что такое алгоритм криптографии?', opts: ['Способ быстрой записи','Правило шифрования и дешифрования','Система счисления','Язык программирования'], a: 'Правило шифрования и дешифрования' },
+  { q: 'Что обозначает принцип "один знак — слово или сочетание букв"?', opts: ['Код Морзе','Стенографию','Двоичный код','Телеграфный код'], a: 'Стенографию' },
+  { q: 'Какой код является неравномерным и троичным?', opts: ['Код Бодо','Код Морзе','Двоичный код','Десятичный код'], a: 'Код Морзе' },
+  { q: 'Какой код является равномерным и двоичным?', opts: ['Код Морзе','Код Бодо','Стенография','Телеграфный код'], a: 'Код Бодо' },
+  { q: 'Для чего используется телеграфный код?', opts: ['Для засекречивания','Для передачи по техническим каналам связи','Для быстрого письма','Для математических вычислений'], a: 'Для передачи по техническим каналам связи' },
+  { q: 'Что такое двоичный код?', opts: ['Код с десятью цифрами','Код с двумя цифрами (0 и 1)','Код с восемью цифрами','Код с шестнадцатью цифрами'], a: 'Код с двумя цифрами (0 и 1)' }
+];
+
+// ===== ТЕОРЕТИЧЕСКИЕ ВОПРОСЫ (ввод ответа) =====
+const textTheoryPool = [
+  { q: 'Как называются языки, на которых люди общаются в повседневной жизни (русский, английский, китайский)?', a: 'естественные' },
+  { q: 'Как называются языки со строгими правилами (математики, программирования, нотная грамота)?', a: 'формальные' },
+  { q: 'Язык математики, нотная грамота, языки программирования — это какие языки? (естественные/формальные)', a: 'формальные' },
+  { q: 'Русский, английский, китайский языки — это какие языки? (естественные/формальные)', a: 'естественные' },
+  { q: 'Как называется процесс представления информации в удобном виде для хранения, передачи или обработки?', a: 'кодирование' },
+  { q: 'Как называется метод засекречивания информации?', a: 'шифрование' },
+  { q: 'Как называется быстрый способ записи речи специальными знаками?', a: 'стенография' },
+  { q: 'Какой код используется для передачи сообщений по телеграфу (фамилия изобретателя)?', a: 'морзе' },
+  { q: 'Как называется равномерный двоичный код, используемый в телеграфии (фамилия)?', a: 'бодо' },
+  { q: 'Какая система счисления используется человеком в повседневной жизни?', a: 'десятичная' },
+  { q: 'Какая система счисления используется в компьютере?', a: 'двоичная' },
+  { q: 'Сколько цифр в двоичной системе счисления?', a: '2' },
+  { q: 'Сколько цифр в десятичной системе счисления?', a: '10' },
+  { q: 'Как называется правило шифрования и дешифрования информации?', a: 'алгоритм' },
+  { q: 'Код Морзе является равномерным или неравномерным?', a: 'неравномерным' },
+  { q: 'Код Бодо является равномерным или неравномерным?', a: 'равномерным' },
+  { q: 'Код Морзе является двоичным или троичным?', a: 'троичным' },
+  { q: 'Код Бодо является двоичным или троичным?', a: 'двоичным' }
+];
+
+// ===== ВОПРОСЫ НА РАСКОДИРОВАНИЕ =====
+const textDecodePool = [
+  // Код Цезаря (сдвиг вперёд при шифровании, значит для расшифровки — назад)
+  { q: ' Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 3 вперёд (А→Г, Б→Д и т.д.):\n\n"ПЛУ"\n\nПодсказка: нужно сдвинуть каждую букву на 3 позиции назад.', a: 'мир' },
+  { q: '🔐 Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 3 вперёд:\n\n"НРФ"\n\nПодсказка: сдвиньте каждую букву на 3 позиции назад.', a: 'кот' },
+  { q: '🔐 Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 1 вперёд (А→Б, Б→В и т.д.):\n\n"БТЛ"\n\nПодсказка: сдвиньте каждую букву на 1 позицию назад.', a: 'аск' },
+  { q: ' Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 2 вперёд:\n\n"ЖКЗ"\n\nПодсказка: сдвиньте каждую букву на 2 позиции назад.', a: 'еиы' },
+  { q: ' Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 2 вперёд:\n\n"ЖФП"\n\nПодсказка: сдвиньте каждую букву на 2 позиции назад.', a: 'дом' },
+  { q: '🔐 Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 4 вперёд:\n\n"ПЙХ"\n\nПодсказка: сдвиньте каждую букву на 4 позиции назад.', a: 'лес' },
+  { q: '🔐 Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 1 вперёд:\n\n"ТПО"\n\nПодсказка: сдвиньте каждую букву на 1 позицию назад.', a: 'сон' },
+  { q: '🔐 Расшифруйте слово, зашифрованное шифром Цезаря со сдвигом 3 вперёд:\n\n"ГРФ"\n\nПодсказка: сдвиньте каждую букву на 3 позиции назад.', a: 'доо' },
+
+  // ⭐ Азбука Морзе (БЕЗ ПОДСКАЗОК)
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">-.- &nbsp; --- &nbsp; -</span>', a: 'кот' },
+  { q: ' Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">-- &nbsp; .. &nbsp; .-.</span>', a: 'мир' },
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">... &nbsp; --- &nbsp; -.-</span>', a: 'сок' },
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">.-.. &nbsp; ..- &nbsp; --.</span>', a: 'луг' },
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">-.. &nbsp; --- &nbsp; --</span>', a: 'дом' },
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">.-.. &nbsp; . &nbsp; ...</span>', a: 'лес' },
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">--. &nbsp; --- &nbsp; -..</span>', a: 'год' },
+  { q: '📡 Расшифруйте слово в азбуке Морзе:\n\n<span class="morse-code">- &nbsp; --- &nbsp; -.</span>', a: 'тон' }
+];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getAttemptData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { attempts: 0, endTime: null };
+  try { return JSON.parse(raw); } catch { return { attempts: 0, endTime: null }; }
+}
+
+function saveAttemptData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let timerInterval = null;
+let endTime = null;
+
+function startTimer() {
+  const data = getAttemptData();
+  if (data.endTime && data.endTime > Date.now()) {
+    endTime = data.endTime;
+  } else {
+    endTime = Date.now() + TIME_LIMIT * 1000;
+    data.endTime = endTime;
+    saveAttemptData(data);
+  }
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    const remaining = Math.floor((endTime - Date.now()) / 1000);
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      alert('⏰ Время вышло! Тест будет проверен автоматически.');
+      checkTest(true);
+      return;
+    }
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+  const min = Math.floor(remaining / 60);
+  const sec = remaining % 60;
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  timerEl.classList.remove('warning', 'danger');
+  if (remaining <= 60) timerEl.classList.add('danger');
+  else if (remaining <= 120) timerEl.classList.add('warning');
+}
+
+function stopTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+}
+
+function buildTest() {
+  const currentChoice = shuffle(choicePool).slice(0, 10);
+  const theoryPart = shuffle(textTheoryPool).slice(0, 6);
+  const decodePart = shuffle(textDecodePool).slice(0, 4);
+  const currentText = shuffle([...theoryPart, ...decodePart]);
+
+  const choiceBlock = document.getElementById('choiceBlock');
+  const textBlock = document.getElementById('textBlock');
+  choiceBlock.innerHTML = '';
+  textBlock.innerHTML = '';
+
+  currentChoice.forEach((item, idx) => {
+    const num = idx + 1;
+    const shuffledOpts = shuffle(item.opts);
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.dataset.answer = item.a.toUpperCase();
+    div.dataset.type = 'choice';
+
+    let optsHtml = '';
+    shuffledOpts.forEach(opt => {
+      optsHtml += `<label><input type="radio" name="q${num}" value="${opt}"> ${opt}</label>`;
+    });
+
+    div.innerHTML = `<p>${num}. ${item.q}</p><div class="options">${optsHtml}</div>`;
+    choiceBlock.appendChild(div);
+  });
+
+  currentText.forEach((item, idx) => {
+    const num = idx + 11;
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.dataset.answer = item.a.toUpperCase();
+    div.dataset.type = 'text';
+    div.innerHTML = `
+      <p>${num}. ${item.q}</p>
+      <input type="text" class="text-input" id="q${num}" placeholder="Ответ">
+    `;
+    textBlock.appendChild(div);
+  });
+}
+
+let testFinished = false;
+
+function checkTest(autoSubmit = false) {
+  if (testFinished) return;
+  testFinished = true;
+  stopTimer();
+
+  const surname = document.getElementById('surname').value.trim();
+  const name = document.getElementById('name').value.trim();
+
+  if (!autoSubmit && (!surname || !name)) {
+    alert('Пожалуйста, введите фамилию и имя!');
+    testFinished = false;
+    return;
+  }
+
+  document.querySelectorAll('input').forEach(i => i.disabled = true);
+  document.getElementById('submitBtn').disabled = true;
+
+  const questions = document.querySelectorAll('.question');
+  let correct = 0;
+  const total = questions.length;
+
+  questions.forEach(q => {
+    const correctAnswer = q.dataset.answer.toUpperCase();
+    const type = q.dataset.type;
+    let userAnswer = '';
+    q.classList.remove('q-correct', 'q-wrong');
+
+    const oldHint = q.querySelector('.answer-hint');
+    if (oldHint) oldHint.remove();
+
+    if (type === 'choice') {
+      const selected = q.querySelector('input[type="radio"]:checked');
+      userAnswer = selected ? selected.value.toUpperCase() : '';
+    } else {
+      const input = q.querySelector('.text-input');
+      userAnswer = input.value.trim().toUpperCase();
+    }
+
+    if (userAnswer === correctAnswer) {
+      correct++;
+      q.classList.add('q-correct');
+    } else {
+      q.classList.add('q-wrong');
+      const hint = document.createElement('div');
+      hint.className = 'answer-hint';
+      hint.textContent = '❌ Правильный ответ: ' + correctAnswer;
+      q.appendChild(hint);
+    }
+  });
+
+  let grade, comment;
+  if (correct >= 19) { grade = 5; comment = 'Отлично! '; }
+  else if (correct >= 15) { grade = 4; comment = 'Хорошо 👍'; }
+  else if (correct >= 10) { grade = 3; comment = 'Удовлетворительно'; }
+  else { grade = 2; comment = 'Нужно повторить тему 📚'; }
+
+  const data = getAttemptData();
+  data.attempts += 1;
+  data.endTime = null;
+  data.lastResult = { surname, name, correct, total, grade, date: new Date().toLocaleString('ru-RU') };
+  saveAttemptData(data);
+
+  const resultDiv = document.getElementById('result');
+  resultDiv.className = 'result show ' + (grade >= 4 ? 'correct' : 'warning');
+  resultDiv.innerHTML = `
+    <h3>Результат теста</h3>
+    <p><b>Ученик:</b> ${surname} ${name}</p>
+    <p><b>Правильных ответов:</b> ${correct} из ${total}</p>
+    <p><b>Оценка:</b> ${grade}</p>
+    <p><b>Попытка:</b> ${data.attempts} из ${MAX_ATTEMPTS}</p>
+    <p><b>${comment}</b></p>
+  `;
+  resultDiv.scrollIntoView({ behavior: 'smooth' });
+
+  if (window.parent !== window) {
+    window.parent.postMessage({
+      type: 'testResult',
+      data: { surname, name, correct, total, grade, attempt: data.attempts }
+    }, '*');
+  }
+}
+
+function init() {
+  const data = getAttemptData();
+
+  document.getElementById('attemptsInfo').textContent =
+    `Попытка: ${data.attempts + 1} из ${MAX_ATTEMPTS}`;
+
+  if (data.attempts >= MAX_ATTEMPTS) {
+    document.getElementById('testContent').style.display = 'none';
+    const blocked = document.getElementById('blockedScreen');
+    blocked.style.display = 'block';
+    document.getElementById('timer').style.display = 'none';
+    const last = data.lastResult;
+    document.getElementById('blockedText').innerHTML = last
+      ? `Вы использовали все ${MAX_ATTEMPTS} попытки.<br>
+         Последняя оценка: <b>${last.grade}</b> (${last.correct}/${last.total})<br>
+         <small>${last.date}</small>`
+      : `Вы использовали все ${MAX_ATTEMPTS} попытки.`;
+    return;
+  }
+
+  buildTest();
+  startTimer();
+}
+
+init();
+</script>
+</body>
+</html>
